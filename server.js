@@ -1,18 +1,22 @@
 let http = require("http");
 let express = require("express");
 let host = "localhost";
-let port = 3000;
+let port = 4000;
 let app = express();
 let bodyParser = require("body-parser");
 let mongoose = require("mongoose");
 let cors = require('cors');
 let Job = require('./Jobs');
 // REST
-mongoose.connect('mongodb://eitan:mlab1234@ds133084.mlab.com:33084/mean');
+
+const dev = 'mongodb://localhost:27017/jobs';
+const prod = 'mongodb://eitan:mlab1234@ds133084.mlab.com:33084/mean';
+mongoose.connect(dev);
+
 
 
 app.use(cors());
-app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
@@ -31,18 +35,23 @@ app.get("/jobs", (req,res) => {
 });
 
 app.post("/jobs", (req, res) => {
-console.log('job data', req.body)
-  const jobData = req.body.job;
+  const jobData = req.body.data;
 
   // save the job in the database
-  const jobEntry = new Job(jobData);
-
+  const jobEntry = new Job({
+    title: req.body.data.title,
+    company: req.body.data.company,
+    location: req.body.data.location,
+    createdBy: req.body.data.createdBy
+  });
+  console.log('jobEntry',jobEntry)
+  
   jobEntry.save((err) => {
     if (err) {
       return res.json({error: err.message, success: false});
     }
 
-    res.json({success: true, job: jobEntry});
+    res.json({success: true, job: jobData});
   });
 });
 
@@ -54,8 +63,13 @@ app.put("/jobs/:_id", (req, res) => {
   res.json({success: true, job});
 });
 
-app.delete("/jobs" , (req, res) => {
+app.delete("/jobs/:id" , (req, res) => {
+  Job.findByIdAndRemove(req.params._id, function(err) {
+    if (err)
+      res.send(err);
 
+    res.json({ message: 'Job removed from db!' });
+  });
 });
 
 app.listen(port, () => {

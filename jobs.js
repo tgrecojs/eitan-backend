@@ -3,10 +3,10 @@ const mongoose = require('mongoose'),
   ObjectId = Schema.ObjectId;
 
 const JobsSchema = new Schema({
-  position: String,
+  title: String,
   company: String,
   location: String,
-  skills: [String]
+  createdBy: String
 });
 
 module.exports = mongoose.model('Job', JobsSchema);
