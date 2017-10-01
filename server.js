@@ -55,19 +55,31 @@ app.post("/jobs", (req, res) => {
   });
 });
 
-app.put("/jobs/:_id", (req, res) => {
-  const updatedJob = req.body.job;
+app.get('/jobs/:id', (req, res) => {
+  Job.findById(req.params.id, (err, job) => {
+    if(err) res.send(err);
 
-  // use the id param on the url to fetch the existing job from the database
-
-  res.json({success: true, job});
+    res.json(job);
+  })
 });
 
-app.delete("/jobs/:id" , (req, res) => {
-  Job.findByIdAndRemove(req.params._id, function(err) {
+app.delete("/jobs/:id", (req, res)  => {
+  // Use the Beer model to find a specific beer and remove it
+  Job.findByIdAndRemove(req.params.id, function(err) {
     if (err)
       res.send(err);
 
+    res.json({ message: 'Job removed from the db!' });
+  });
+});
+
+
+app.delete("/jobs/:id" , (req, res) => {
+  Job.findByIdAndRemove(req.params._id, function(err, job) {
+    if (err)
+      res.send(err);
+    Job.remove({ _id: req.body.id });
+    // may need to send new jobs array back
     res.json({ message: 'Job removed from db!' });
   });
 });
